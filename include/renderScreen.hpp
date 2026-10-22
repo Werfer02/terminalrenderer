@@ -25,6 +25,7 @@ public:
 
     void drawCircle(const point& pos, int radius, const color& c);
     void drawCircles(const std::vector<point>& points, const std::vector<int> radii);  
+    void drawCircles(const std::vector<vertex>& vertices, const std::vector<int> radii);  
 
     void drawCircle(const point& pos, int radius);
 

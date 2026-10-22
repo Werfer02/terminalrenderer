@@ -169,6 +169,12 @@ void RenderScreen::drawCircles(const std::vector<point>& points, const std::vect
     }
 }
 
+void RenderScreen::drawCircles(const std::vector<vertex>& vertices, const std::vector<int> radii){
+    for(int i = 0; i < vertices.size(); i++){
+        drawCircle(vertices[i], radii[i]);
+    }
+}
+
 void RenderScreen::setDrawColor(const color& c){
     drawColor = c;
 }
