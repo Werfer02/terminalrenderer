@@ -20,8 +20,11 @@ public:
     void drawTri(const point& p1, const point& p2, const point& p3);
     void drawTris(const std::vector<vertex>& vertices);
     void drawTris(const std::vector<point>& points);
-    void drawTrisIndexed(const std::vector<vertex>& vertices, const std::vector<int>& indices);
-    void drawTrisIndexed(const std::vector<point>& points, const std::vector<int>& indices);
+
+    void drawPoly(std::vector<vertex> vertices);
+    void drawPolyIndexed(const std::vector<vertex>& vertices, const std::vector<int>& indices);
+    void drawPoly(std::vector<point> points);
+    void drawPolyIndexed(const std::vector<point>& points, const std::vector<int>& indices);
 
     void drawCircle(const point& pos, int radius, const color& c);
     void drawCircles(const std::vector<point>& points, const std::vector<int> radii);  

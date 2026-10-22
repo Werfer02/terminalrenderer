@@ -1,5 +1,7 @@
 #include "vec2D.hpp"
 
+#include <cmath>
+
 #include "point.hpp"
 
 namespace tr {
@@ -18,6 +20,10 @@ vec2D vec2D::toLocal(const vec2D& p, const vec2D& origin, const vec2D& up, const
     float det = cross(up, right);
 
     return {cross(rel, right) / det, cross(up, rel) / det};
+}
+
+float vec2D::mag() const {
+    return std::sqrt(x*x + y*y);
 }
 
 }

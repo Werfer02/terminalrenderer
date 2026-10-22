@@ -74,7 +74,8 @@ void RenderScreen::drawLines(const std::vector<point>& points){
     }
 }
 
-void RenderScreen::drawTri(const vertex& p1, const vertex& p2, const vertex& p3){
+template <typename f>
+void forEachInTri(const vertex& p1, const vertex& p2, const vertex& p3, f&& todo){
     float minx = std::min({p1.x, p2.x, p3.x});
     float miny = std::min({p1.y, p2.y, p3.y});
     float maxx = std::max({p1.x, p2.x, p3.x});
@@ -91,17 +92,30 @@ void RenderScreen::drawTri(const vertex& p1, const vertex& p2, const vertex& p3)
             float w3 = local.y;
             float w1 = 1 - w2 - w3;
             if(w1 >= 0 && w2 >= 0 && w3 >= 0){
-                int r = (w1*p1.c.r + w2*p2.c.r + w3*p3.c.r);
-                int g = (w1*p1.c.g + w2*p2.c.g + w3*p3.c.g);
-                int b = (w1*p1.c.b + w2*p2.c.b + w3*p3.c.b);
-                data[((i) * width) + j] = ansi::rgb(r, g, b) + "█";
+                todo(i, j, w1, w2, w3);
             }
         }
     }
 }
 
+void RenderScreen::drawTri(const vertex& p1, const vertex& p2, const vertex& p3){
+
+    auto drawWithAvgColor = [&] (int i, int j, float w1, float w2, float w3){
+        int r = (w1*p1.c.r + w2*p2.c.r + w3*p3.c.r);
+        int g = (w1*p1.c.g + w2*p2.c.g + w3*p3.c.g);
+        int b = (w1*p1.c.b + w2*p2.c.b + w3*p3.c.b);
+        data[((i) * width) + j] = ansi::rgb(r, g, b) + "█";
+    };
+    
+    forEachInTri(p1, p2, p3, drawWithAvgColor);
+}
+
 void RenderScreen::drawTri(const point& p1, const point& p2, const point& p3){
-    drawTri({p1, drawColor}, {p2, drawColor}, {p3, drawColor});
+    auto drawWithDrawColor = [&] (int i, int j, float w1, float w2, float w3){
+        data[((i) * width) + j] = ansi::rgb(drawColor.r, drawColor.g, drawColor.b) + "█";
+    };
+    
+    forEachInTri(p1, p2, p3, drawWithDrawColor);
 }
 
 void RenderScreen::drawTris(const std::vector<vertex>& vertices){
@@ -124,23 +138,87 @@ void RenderScreen::drawTris(const std::vector<point>& points){
     }
 }
 
-void RenderScreen::drawTrisIndexed(const std::vector<point>& points, const std::vector<int>& indices){
-    if(indices.size() % 3 != 0){
-        std::cout << "invalid number of points for drawtris";
-        return;
-    }
-    for(int i = 0; i < indices.size() - 2; i+=3){
-        drawTri(points[indices[i]], points[indices[i+1]], points[indices[i+2]]);
+bool sortVertices(const vertex& a, const vertex& b){
+    if(a.y < b.y) return true;
+    if(a.y == b.y && a.x < b.x) return true;
+    return false;
+}
+
+void RenderScreen::drawPoly(std::vector<vertex> vertices){
+    std::sort(vertices.begin(), vertices.end(), sortVertices);
+    auto drawWithAvgColor = [&](int i, int j, float w1, float w2, float w3){
+        float totalWeights = 0;
+        vec2D p = vec2D{j, i};
+        color c = {0, 0, 0};
+        for(const auto& v : vertices){
+            float mag = vec2D(p - vec2D(v)).mag();
+            float weight = 1/mag;
+            
+            totalWeights += weight;
+
+            c.r += v.c.r * weight;
+            c.g += v.c.g * weight;
+            c.b += v.c.b * weight;
+        }
+
+        c.r /= totalWeights;
+        c.g /= totalWeights;
+        c.b /= totalWeights;
+        data[((i) * width) + j] = ansi::rgb(c.r, c.g, c.b) + "█";
+    };
+    for(int i = 0; i < vertices.size() - 2; i++){
+
+        forEachInTri(vertices[i], vertices[i+1], vertices[i+2], drawWithAvgColor);
+
     }
 }
 
-void RenderScreen::drawTrisIndexed(const std::vector<vertex>& vertices, const std::vector<int>& indices){
-    if(indices.size() % 3 != 0){
-        std::cout << "invalid number of points for drawtris";
-        return;
+void RenderScreen::drawPolyIndexed(const std::vector<vertex>& vertices, const std::vector<int>& indices){
+    std::vector<vertex> sorted = vertices;
+    std::sort(sorted.begin(), sorted.end(), sortVertices);
+    auto drawWithAvgColor = [&](int i, int j, float w1, float w2, float w3){
+        float totalWeights = 0;
+        vec2D p = vec2D{j, i};
+        color c = {0, 0, 0};
+        for(const auto& v : sorted){
+            float mag = vec2D(p - vec2D(v)).mag();
+            float weight = 1/mag;
+            
+            totalWeights += weight;
+
+            c.r += v.c.r * weight;
+            c.g += v.c.g * weight;
+            c.b += v.c.b * weight;
+        }
+
+        c.r /= totalWeights;
+        c.g /= totalWeights;
+        c.b /= totalWeights;
+        data[((i) * width) + j] = ansi::rgb(c.r, c.g, c.b) + "█";
+    };
+    for(int i = 0; i < indices.size() - 2; i++){
+
+        forEachInTri(vertices[indices[i]], vertices[indices[i+1]], vertices[indices[i+2]], drawWithAvgColor);
+
     }
-    for(int i = 0; i < indices.size() - 2; i+=3){
-        drawTri(vertices[indices[i]], vertices[indices[i+1]], vertices[indices[i+2]]);
+}
+
+void RenderScreen::drawPoly(std::vector<point> points){
+    std::sort(points.begin(), points.end(), sortVertices);
+    auto drawWithDrawColor = [&](int i, int j, float w1, float w2, float w3){
+        data[((j) * width) + i] = ansi::rgb(drawColor.r, drawColor.g, drawColor.b) + "█";
+    };
+    for(int i = 0; i < points.size() - 2; i++){
+        forEachInTri(points[i], points[i+1], points[i+2], drawWithDrawColor);
+    }
+}
+
+void RenderScreen::drawPolyIndexed(const std::vector<point>& points, const std::vector<int>& indices){
+    auto drawWithDrawColor = [&](int i, int j, float w1, float w2, float w3){
+        data[((j) * width) + i] = ansi::rgb(drawColor.r, drawColor.g, drawColor.b) + "█";
+    };
+    for(int i = 0; i < points.size() - 2; i++){
+        forEachInTri(points[i], points[i+1], points[i+2], drawWithDrawColor);
     }
 }
 
@@ -179,4 +257,8 @@ void RenderScreen::setDrawColor(const color& c){
     drawColor = c;
 }
 
+//drawpoly
+//drawpolyIndexed
+// - drawtrisindexed
+// add mag to vec2d
 }
