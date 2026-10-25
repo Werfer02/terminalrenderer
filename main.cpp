@@ -39,7 +39,11 @@ int main(){
                                 {{90, 80}, {}, {1, 1}}};
     std::vector<int> i2 {0, 1, 2, 1, 2, 3};
 
-    s.drawPolyIndexed(v2, i2, t);
+    std::vector<tr::vertex> v3 {{{50, 30}, {}, {0.5, 0}},
+                                {{20, 60}, {}, {0, 1}},
+                                {{70, 60}, {}, {1, 1}}};
+    s.drawPoly(v3, t);
+
     s.doublePrint();
     stbi_image_free(t.data);
 }
