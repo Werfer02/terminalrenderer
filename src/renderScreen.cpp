@@ -166,12 +166,38 @@ void RenderScreen::drawPoly(std::vector<vertex> vertices){
         c.b /= totalWeights;
         data[((i) * width) + j] = ansi::rgb(c.r, c.g, c.b) + "█";
     };
-    for(int i = 0; i < vertices.size() - 2; i++){
+    for(int i = 0; i < vertices.size() - 2; i+=3){
 
         forEachInTri(vertices[i], vertices[i+1], vertices[i+2], drawWithAvgColor);
 
     }
 }
+
+void RenderScreen::drawPoly(std::vector<vertex> vertices, const texture& t){
+    std::sort(vertices.begin(), vertices.end(), sortVertices);
+    for(int i = 0; i < vertices.size() - 2; i+=3){
+
+        auto drawWithTexture = [&](int i, int j, float w1, float w2, float w3){
+            float totalWeights = 0;
+            vec2D p = vec2D{j, i};
+            vec2D texCoord = {0, 0};
+
+            texCoord.x = vertices[i].uv.x*w1 + vertices[i+1].uv.x*w2 + vertices[i+2].uv.x*w3;
+            texCoord.x *= t.w;
+            texCoord.y = vertices[i].uv.y*w1 + vertices[i+1].uv.y*w2 + vertices[i+2].uv.y*w3;
+            texCoord.y *= t.h;
+
+            int r = t.data[int((t.w * texCoord.y * t.channels) + texCoord.x * t.channels)];
+            int g = t.data[int((t.w * texCoord.y * t.channels) + texCoord.x * t.channels) + 1];
+            int b = t.data[int((t.w * texCoord.y * t.channels) + texCoord.x * t.channels) + 2];
+            data[((i) * width) + j] = ansi::rgb(r, g, b) + "█";
+        };
+
+        forEachInTri(vertices[i], vertices[i+1], vertices[i+2], drawWithTexture);
+
+    }
+}
+
 
 void RenderScreen::drawPolyIndexed(const std::vector<vertex>& vertices, const std::vector<int>& indices){
     std::vector<vertex> sorted = vertices;
@@ -196,9 +222,34 @@ void RenderScreen::drawPolyIndexed(const std::vector<vertex>& vertices, const st
         c.b /= totalWeights;
         data[((i) * width) + j] = ansi::rgb(c.r, c.g, c.b) + "█";
     };
-    for(int i = 0; i < indices.size() - 2; i++){
+    for(int i = 0; i < indices.size() - 2; i+=3){
 
         forEachInTri(vertices[indices[i]], vertices[indices[i+1]], vertices[indices[i+2]], drawWithAvgColor);
+
+    }
+}
+
+void RenderScreen::drawPolyIndexed(const std::vector<vertex>& vertices, const std::vector<int>& indices, const texture& t){
+    for(int i = 0; i < indices.size() - 2; i+=3){
+
+        auto drawWithTexture = [&](int ini, int j, float w1, float w2, float w3){
+            float totalWeights = 0;
+            vec2D p = vec2D{j, ini};
+
+            float tx = vertices[indices[i]].uv.x*w1 + vertices[indices[i+1]].uv.x*w2 + vertices[indices[i+2]].uv.x*w3;
+            tx = std::clamp(int(tx * t.w), 0, t.w - 1);
+            float ty = vertices[indices[i]].uv.y*w1 + vertices[indices[i+1]].uv.y*w2 + vertices[indices[i+2]].uv.y*w3;
+            ty = std::clamp(int(ty * t.h), 0, t.h - 1);
+
+            int offset = (ty * t.w + tx) * t.channels;
+
+            int r = t.data[offset];
+            int g = t.data[offset + 1];
+            int b = t.data[offset + 2];
+            data[((ini) * width) + j] = ansi::rgb(r, g, b) + "█";
+        };
+
+        forEachInTri(vertices[indices[i]], vertices[indices[i+1]], vertices[indices[i+2]], drawWithTexture);
 
     }
 }
@@ -257,8 +308,4 @@ void RenderScreen::setDrawColor(const color& c){
     drawColor = c;
 }
 
-//drawpoly
-//drawpolyIndexed
-// - drawtrisindexed
-// add mag to vec2d
 }

@@ -9,5 +9,6 @@ vertex::operator point() const {
 }
 
 vertex::vertex(fpoint p, color inc) : fpoint(p) , c(inc) {}
+vertex::vertex(fpoint p, color inc, vec2D inuv) : fpoint(p) , c(inc), uv(inuv) {}
 
 }

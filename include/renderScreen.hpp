@@ -2,6 +2,7 @@
 
 #include "screen.hpp"
 #include "vertex.hpp"
+#include "texture.hpp"
 
 namespace tr {
 
@@ -25,6 +26,9 @@ public:
     void drawPolyIndexed(const std::vector<vertex>& vertices, const std::vector<int>& indices);
     void drawPoly(std::vector<point> points);
     void drawPolyIndexed(const std::vector<point>& points, const std::vector<int>& indices);
+
+    void drawPoly(std::vector<vertex> vertices, const texture& t);
+    void drawPolyIndexed(const std::vector<vertex>& vertices, const std::vector<int>& indices, const texture& t);
 
     void drawCircle(const point& pos, int radius, const color& c);
     void drawCircles(const std::vector<point>& points, const std::vector<int> radii);  
