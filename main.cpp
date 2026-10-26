@@ -12,7 +12,7 @@ int main(){
     std::cout << "Hello, World!\n";
     tr::RenderScreen s(100, 100);
 
-    s.clear(tr::color::white);
+    s.clear(tr::color::green);
 
     s.drawCircle({25, 25}, 18, tr::color::magenta);
 

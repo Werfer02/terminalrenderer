@@ -3,7 +3,7 @@
 namespace tr {
 
 struct color{ 
-    int r, g, b;
+    int r = 0, g = 0, b = 0;
     const static color red;
     const static color green;
     const static color blue;

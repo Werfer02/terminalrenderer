@@ -50,7 +50,7 @@ void RenderScreen::drawLine(vertex start, vertex end){
         color c = {(int)(start.c.r*(1 - progress) + end.c.r*progress),
                    (int)(start.c.g*(1 - progress) + end.c.g*progress),
                    (int)(start.c.b*(1 - progress) + end.c.b*progress)};
-        data[((effectivepos.y) * width) + effectivepos.x] = ansi::rgb(c.r, c.g, c.b) + "█";
+        putPixel(effectivepos, c);
     }
 }
 
@@ -104,7 +104,7 @@ void RenderScreen::drawTri(const vertex& p1, const vertex& p2, const vertex& p3)
         int r = (w1*p1.c.r + w2*p2.c.r + w3*p3.c.r);
         int g = (w1*p1.c.g + w2*p2.c.g + w3*p3.c.g);
         int b = (w1*p1.c.b + w2*p2.c.b + w3*p3.c.b);
-        data[((i) * width) + j] = ansi::rgb(r, g, b) + "█";
+        putPixel({j, i}, {r, g, b});
     };
     
     forEachInTri(p1, p2, p3, drawWithAvgColor);
@@ -112,7 +112,7 @@ void RenderScreen::drawTri(const vertex& p1, const vertex& p2, const vertex& p3)
 
 void RenderScreen::drawTri(const point& p1, const point& p2, const point& p3){
     auto drawWithDrawColor = [&] (int i, int j, float w1, float w2, float w3){
-        data[((i) * width) + j] = ansi::rgb(drawColor.r, drawColor.g, drawColor.b) + "█";
+        putPixel({j, i}, drawColor);
     };
     
     forEachInTri(p1, p2, p3, drawWithDrawColor);
@@ -163,7 +163,7 @@ void RenderScreen::drawPoly(std::vector<vertex> vertices){
         c.r /= totalWeights;
         c.g /= totalWeights;
         c.b /= totalWeights;
-        data[((i) * width) + j] = ansi::rgb(c.r, c.g, c.b) + "█";
+        putPixel({j, i}, c);
     };
     for(int i = 0; i < vertices.size() - 2; i+=3){
 
@@ -189,8 +189,7 @@ void RenderScreen::drawPoly(std::vector<vertex> vertices, const texture& t){
             int r = t.data[offset];
             int g = t.data[offset + 1];
             int b = t.data[offset + 2];
-            data[((ini) * width) + j] = ansi::rgb(r, g, b) + "█";
-            data[((ini) * width) + j] = ansi::rgb(r, g, b) + "█";
+            putPixel({j, ini}, {r, g, b});
         };
 
         forEachInTri(vertices[i], vertices[i+1], vertices[i+2], drawWithTexture);
@@ -219,7 +218,7 @@ void RenderScreen::drawPolyIndexed(const std::vector<vertex>& vertices, const st
         c.r /= totalWeights;
         c.g /= totalWeights;
         c.b /= totalWeights;
-        data[((i) * width) + j] = ansi::rgb(c.r, c.g, c.b) + "█";
+        putPixel({j, i}, c);
     };
     for(int i = 0; i < indices.size() - 2; i+=3){
 
@@ -244,7 +243,7 @@ void RenderScreen::drawPolyIndexed(const std::vector<vertex>& vertices, const st
             int r = t.data[offset];
             int g = t.data[offset + 1];
             int b = t.data[offset + 2];
-            data[((ini) * width) + j] = ansi::rgb(r, g, b) + "█";
+            putPixel({j, ini}, {r, g, b});
         };
 
         forEachInTri(vertices[indices[i]], vertices[indices[i+1]], vertices[indices[i+2]], drawWithTexture);
@@ -255,7 +254,7 @@ void RenderScreen::drawPolyIndexed(const std::vector<vertex>& vertices, const st
 void RenderScreen::drawPoly(std::vector<point> points){
     std::sort(points.begin(), points.end(), sortVertices);
     auto drawWithDrawColor = [&](int i, int j, float w1, float w2, float w3){
-        data[((j) * width) + i] = ansi::rgb(drawColor.r, drawColor.g, drawColor.b) + "█";
+        putPixel({j, i}, drawColor);
     };
     for(int i = 0; i < points.size() - 2; i++){
         forEachInTri(points[i], points[i+1], points[i+2], drawWithDrawColor);
@@ -264,7 +263,7 @@ void RenderScreen::drawPoly(std::vector<point> points){
 
 void RenderScreen::drawPolyIndexed(const std::vector<point>& points, const std::vector<int>& indices){
     auto drawWithDrawColor = [&](int i, int j, float w1, float w2, float w3){
-        data[((j) * width) + i] = ansi::rgb(drawColor.r, drawColor.g, drawColor.b) + "█";
+        putPixel({j, i}, drawColor);
     };
     for(int i = 0; i < points.size() - 2; i++){
         forEachInTri(points[i], points[i+1], points[i+2], drawWithDrawColor);
@@ -281,7 +280,7 @@ void RenderScreen::drawCircle(const point& pos, int radius, const color& c){
         for(int j = minx; j <= maxx; j++){
             int relx = j - minx - radius;
             int rely = i - miny - radius;
-            if(relx*relx + rely*rely <= radius*radius) data[((i) * width) + j] = ansi::rgb(c.r, c.g, c.b) + "█";
+            if(relx*relx + rely*rely <= radius*radius) putPixel({j, i}, c);
         }
     }
 }
