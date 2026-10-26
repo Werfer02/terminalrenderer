@@ -4,6 +4,7 @@ namespace tr {
 
 struct color{ 
     int r = 0, g = 0, b = 0;
+    int a = 255;
     const static color red;
     const static color green;
     const static color blue;

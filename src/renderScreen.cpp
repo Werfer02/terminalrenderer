@@ -98,13 +98,20 @@ void forEachInTri(const vertex& p1, const vertex& p2, const vertex& p3, f&& todo
     }
 }
 
+color blend(const color& c1, const color& c2, float w){
+    return {c1.r*w + c2.r*(1-w),
+            c1.g*w + c2.g*(1-w),
+            c1.b*w + c2.b*(1-w)};
+}
+
 void RenderScreen::drawTri(const vertex& p1, const vertex& p2, const vertex& p3){
 
     auto drawWithAvgColor = [&] (int i, int j, float w1, float w2, float w3){
         int r = (w1*p1.c.r + w2*p2.c.r + w3*p3.c.r);
         int g = (w1*p1.c.g + w2*p2.c.g + w3*p3.c.g);
         int b = (w1*p1.c.b + w2*p2.c.b + w3*p3.c.b);
-        putPixel({j, i}, {r, g, b});
+        int a = (w1*p1.c.a + w2*p2.c.a + w3*p3.c.a);
+        putPixel({j, i}, blend({r, g, b}, colors[i*width + j], (float)a/255.f));
     };
     
     forEachInTri(p1, p2, p3, drawWithAvgColor);
@@ -158,12 +165,14 @@ void RenderScreen::drawPoly(std::vector<vertex> vertices){
             c.r += v.c.r * weight;
             c.g += v.c.g * weight;
             c.b += v.c.b * weight;
+            c.a += v.c.a * weight;
         }
 
         c.r /= totalWeights;
         c.g /= totalWeights;
         c.b /= totalWeights;
-        putPixel({j, i}, c);
+        c.a /= totalWeights;
+        putPixel({j, i}, blend(c, colors[i*width + j], (float)c.a/255.f));
     };
     for(int i = 0; i < vertices.size() - 2; i+=3){
 
@@ -189,7 +198,9 @@ void RenderScreen::drawPoly(std::vector<vertex> vertices, const texture& t){
             int r = t.data[offset];
             int g = t.data[offset + 1];
             int b = t.data[offset + 2];
-            putPixel({j, ini}, {r, g, b});
+            
+            int a = t.channels >= 4 ? t.data[offset + 3] : 255;
+            putPixel({j, ini}, blend({r, g, b}, colors[ini*width + j], (float)a/255.f));
         };
 
         forEachInTri(vertices[i], vertices[i+1], vertices[i+2], drawWithTexture);
@@ -203,7 +214,7 @@ void RenderScreen::drawPolyIndexed(const std::vector<vertex>& vertices, const st
     std::sort(sorted.begin(), sorted.end(), sortVertices);
     auto drawWithAvgColor = [&](int i, int j, float w1, float w2, float w3){
         float totalWeights = 0;
-        color c = {0, 0, 0};
+        color c = {0, 0, 0, 0};
         for(const auto& v : sorted){
             float mag = vec2D(vec2D{(float)j, (float)i} - vec2D(v)).mag();
             float weight = 1/mag;
@@ -213,12 +224,15 @@ void RenderScreen::drawPolyIndexed(const std::vector<vertex>& vertices, const st
             c.r += v.c.r * weight;
             c.g += v.c.g * weight;
             c.b += v.c.b * weight;
+            c.a += v.c.a * weight;
         }
+
 
         c.r /= totalWeights;
         c.g /= totalWeights;
         c.b /= totalWeights;
-        putPixel({j, i}, c);
+        c.a /= totalWeights;
+        putPixel({j, i}, blend(c, colors[i*width + j], (float)c.a/255.f));
     };
     for(int i = 0; i < indices.size() - 2; i+=3){
 
@@ -243,7 +257,9 @@ void RenderScreen::drawPolyIndexed(const std::vector<vertex>& vertices, const st
             int r = t.data[offset];
             int g = t.data[offset + 1];
             int b = t.data[offset + 2];
-            putPixel({j, ini}, {r, g, b});
+
+            int a = t.channels >= 4 ? t.data[offset + 3] : 255;
+            putPixel({j, ini}, blend({r, g, b}, colors[ini*width + j], (float)a/255.f));
         };
 
         forEachInTri(vertices[indices[i]], vertices[indices[i+1]], vertices[indices[i+2]], drawWithTexture);

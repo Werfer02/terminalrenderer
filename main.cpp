@@ -8,6 +8,8 @@
 #include "renderScreen.hpp"
 #include "stb_image.h"
 
+#include "color.hpp"
+
 int main(){
     std::cout << "Hello, World!\n";
     tr::RenderScreen s(100, 100);

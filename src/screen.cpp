@@ -48,6 +48,7 @@ void appendUTF8(std::string& out, char32_t c){
         out.push_back(char(0x80 | (c & 0x3F)));         // prefix + bottom bits
     }
 }
+
 void Screen::print(){
     std::string output;
     for(int i = 0; i < height; i++){
