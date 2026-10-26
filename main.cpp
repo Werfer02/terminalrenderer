@@ -12,7 +12,7 @@ int main(){
     std::cout << "Hello, World!\n";
     tr::RenderScreen s(100, 100);
 
-    s.clear();
+    s.clear(tr::color::white);
 
     s.drawCircle({25, 25}, 18, tr::color::magenta);
 
@@ -38,12 +38,8 @@ int main(){
                                 {{10, 80}, {}, {0, 1}},
                                 {{90, 80}, {}, {1, 1}}};
     std::vector<int> i2 {0, 1, 2, 1, 2, 3};
-
-    std::vector<tr::vertex> v3 {{{50, 30}, {}, {0.5, 0}},
-                                {{20, 60}, {}, {0, 1}},
-                                {{70, 60}, {}, {1, 1}}};
-    s.drawPoly(v3, t);
-
+    s.drawPolyIndexed(v2, i2, t);
+    int a = 5;
     s.doublePrint();
     stbi_image_free(t.data);
 }

@@ -15,6 +15,9 @@ Screen::Screen(int w, int h) : width(w), height(h) {
 void Screen::clear(){
     data = std::vector<std::string>(width*height, " ");
 }
+void Screen::clear(const color& c){
+    data = std::vector<std::string>(width*height, ansi::rgb(c.r, c.g, c.b) + "█");
+}
 void Screen::putPixel(const point& p, const std::string& s){
     data[(p.y * width) + p.x] = s;
 }

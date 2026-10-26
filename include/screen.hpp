@@ -16,6 +16,7 @@ public:
 	Screen();
 	Screen(int w, int h);
     void clear();
+    void clear(const color& c);
     void putPixel(const point& p, const std::string& s);
 	void putPixel(const point& p, const color& c);
     void print();

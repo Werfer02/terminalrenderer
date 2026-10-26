@@ -47,9 +47,9 @@ void RenderScreen::drawLine(vertex start, vertex end){
         effectivepos += offset;
 
         float progress = ((float)x / (end.x - start.x));
-        color c = {start.c.r*(1 - progress) + end.c.r*progress,
-                   start.c.g*(1 - progress) + end.c.g*progress,
-                   start.c.b*(1 - progress) + end.c.b*progress};
+        color c = {(int)(start.c.r*(1 - progress) + end.c.r*progress),
+                   (int)(start.c.g*(1 - progress) + end.c.g*progress),
+                   (int)(start.c.b*(1 - progress) + end.c.b*progress)};
         data[((effectivepos.y) * width) + effectivepos.x] = ansi::rgb(c.r, c.g, c.b) + "█";
     }
 }
@@ -148,10 +148,9 @@ void RenderScreen::drawPoly(std::vector<vertex> vertices){
     std::sort(vertices.begin(), vertices.end(), sortVertices);
     auto drawWithAvgColor = [&](int i, int j, float w1, float w2, float w3){
         float totalWeights = 0;
-        vec2D p = vec2D{j, i};
         color c = {0, 0, 0};
         for(const auto& v : vertices){
-            float mag = vec2D(p - vec2D(v)).mag();
+            float mag = vec2D(vec2D{(float)j, (float)i} - vec2D(v)).mag();
             float weight = 1/mag;
             
             totalWeights += weight;
@@ -179,7 +178,6 @@ void RenderScreen::drawPoly(std::vector<vertex> vertices, const texture& t){
 
         auto drawWithTexture = [&](int ini, int j, float w1, float w2, float w3){
             float totalWeights = 0;
-            vec2D p = vec2D{j, ini};
 
             float tx = vertices[i].uv.x*w1 + vertices[i+1].uv.x*w2 + vertices[i+2].uv.x*w3;
             tx = std::clamp(int(tx * t.w), 0, t.w - 1);
@@ -206,10 +204,9 @@ void RenderScreen::drawPolyIndexed(const std::vector<vertex>& vertices, const st
     std::sort(sorted.begin(), sorted.end(), sortVertices);
     auto drawWithAvgColor = [&](int i, int j, float w1, float w2, float w3){
         float totalWeights = 0;
-        vec2D p = vec2D{j, i};
         color c = {0, 0, 0};
         for(const auto& v : sorted){
-            float mag = vec2D(p - vec2D(v)).mag();
+            float mag = vec2D(vec2D{(float)j, (float)i} - vec2D(v)).mag();
             float weight = 1/mag;
             
             totalWeights += weight;
@@ -236,7 +233,6 @@ void RenderScreen::drawPolyIndexed(const std::vector<vertex>& vertices, const st
 
         auto drawWithTexture = [&](int ini, int j, float w1, float w2, float w3){
             float totalWeights = 0;
-            vec2D p = vec2D{j, ini};
 
             float tx = vertices[indices[i]].uv.x*w1 + vertices[indices[i+1]].uv.x*w2 + vertices[indices[i+2]].uv.x*w3;
             tx = std::clamp(int(tx * t.w), 0, t.w - 1);
