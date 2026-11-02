@@ -34,7 +34,7 @@ int main(){
     s.drawCircles(vertices, std::vector<int>(6, 2));
 
     tr::texture t;
-    t.data = stbi_load(".vscode/watermark.png", &t.w, &t.h, &t.channels, 0);
+    t.data = stbi_load("demo/watermark.png", &t.w, &t.h, &t.channels, 0);
     std::vector<tr::vertex> v2 {{{10, 50}, {}, {0, 0}},
                                 {{90, 50}, {}, {1, 0}},
                                 {{10, 80}, {}, {0, 1}},
