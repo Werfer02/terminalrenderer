@@ -9,6 +9,12 @@
 
 namespace tr {
 
+color blend(const color& c1, const color& c2, float w){
+    return {c1.r*w + c2.r*(1-w),
+            c1.g*w + c2.g*(1-w),
+            c1.b*w + c2.b*(1-w)};
+}
+
 void RenderScreen::drawLine(vertex start, vertex end){
 
     bool flipy = false;
@@ -50,7 +56,7 @@ void RenderScreen::drawLine(vertex start, vertex end){
         color c = {(int)(start.c.r*(1 - progress) + end.c.r*progress),
                    (int)(start.c.g*(1 - progress) + end.c.g*progress),
                    (int)(start.c.b*(1 - progress) + end.c.b*progress)};
-        putPixel(effectivepos, c);
+        putPixel(effectivepos, blend(c, colors[effectivepos.y*width + effectivepos.x], (float)c.a/255.f));
     }
 }
 
@@ -96,12 +102,6 @@ void forEachInTri(const vertex& p1, const vertex& p2, const vertex& p3, f&& todo
             }
         }
     }
-}
-
-color blend(const color& c1, const color& c2, float w){
-    return {c1.r*w + c2.r*(1-w),
-            c1.g*w + c2.g*(1-w),
-            c1.b*w + c2.b*(1-w)};
 }
 
 void RenderScreen::drawTri(const vertex& p1, const vertex& p2, const vertex& p3){
@@ -270,7 +270,7 @@ void RenderScreen::drawPolyIndexed(const std::vector<vertex>& vertices, const st
 void RenderScreen::drawPoly(std::vector<point> points){
     std::sort(points.begin(), points.end(), sortVertices);
     auto drawWithDrawColor = [&](int i, int j, float w1, float w2, float w3){
-        putPixel({j, i}, drawColor);
+        putPixel({j, i}, blend(drawColor, colors[i*width + j], (float)drawColor.a/255.f));
     };
     for(int i = 0; i < points.size() - 2; i++){
         forEachInTri(points[i], points[i+1], points[i+2], drawWithDrawColor);
@@ -279,7 +279,7 @@ void RenderScreen::drawPoly(std::vector<point> points){
 
 void RenderScreen::drawPolyIndexed(const std::vector<point>& points, const std::vector<int>& indices){
     auto drawWithDrawColor = [&](int i, int j, float w1, float w2, float w3){
-        putPixel({j, i}, drawColor);
+        putPixel({j, i}, blend(drawColor, colors[i*width + j], (float)drawColor.a/255.f));
     };
     for(int i = 0; i < points.size() - 2; i++){
         forEachInTri(points[i], points[i+1], points[i+2], drawWithDrawColor);
@@ -296,7 +296,7 @@ void RenderScreen::drawCircle(const point& pos, int radius, const color& c){
         for(int j = minx; j <= maxx; j++){
             int relx = j - minx - radius;
             int rely = i - miny - radius;
-            if(relx*relx + rely*rely <= radius*radius) putPixel({j, i}, c);
+            if(relx*relx + rely*rely <= radius*radius) putPixel({j, i}, blend(c, colors[i*width + j], (float)c.a/255.f));
         }
     }
 }
