@@ -16,7 +16,7 @@ Screen::Screen(int w, int h) : width(w), height(h) {
 }
 
 bool Screen::inBounds(const point& p){
-    return p.x < width && p.y < height;
+    return (p.x < width && p.x >= 0 && p.y < height && p.y >= 0);
 }
 void Screen::clear(){
     characters = std::u32string(width*height, U' ');

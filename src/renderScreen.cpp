@@ -56,7 +56,7 @@ void RenderScreen::drawLine(vertex start, vertex end){
         color c = {(int)(start.c.r*(1 - progress) + end.c.r*progress),
                    (int)(start.c.g*(1 - progress) + end.c.g*progress),
                    (int)(start.c.b*(1 - progress) + end.c.b*progress)};
-        putPixel(effectivepos, blend(c, colors[effectivepos.y*width + effectivepos.x], (float)c.a/255.f));
+        if(inBounds(effectivepos)) putPixel(effectivepos, blend(c, colors[effectivepos.y*width + effectivepos.x], (float)c.a/255.f));
     }
 }
 
@@ -111,7 +111,7 @@ void RenderScreen::drawTri(const vertex& p1, const vertex& p2, const vertex& p3)
         int g = (w1*p1.c.g + w2*p2.c.g + w3*p3.c.g);
         int b = (w1*p1.c.b + w2*p2.c.b + w3*p3.c.b);
         int a = (w1*p1.c.a + w2*p2.c.a + w3*p3.c.a);
-        putPixel({j, i}, blend({r, g, b}, colors[i*width + j], (float)a/255.f));
+        if(inBounds({j,i})) putPixel({j, i}, blend({r, g, b}, colors[i*width + j], (float)a/255.f));
     };
     
     forEachInTri(p1, p2, p3, drawWithAvgColor);
@@ -119,7 +119,7 @@ void RenderScreen::drawTri(const vertex& p1, const vertex& p2, const vertex& p3)
 
 void RenderScreen::drawTri(const point& p1, const point& p2, const point& p3){
     auto drawWithDrawColor = [&] (int i, int j, float w1, float w2, float w3){
-        putPixel({j, i}, drawColor);
+        if(inBounds({j,i})) putPixel({j, i}, blend(drawColor, colors[i*width + j], (float)drawColor.a/255.f));
     };
     
     forEachInTri(p1, p2, p3, drawWithDrawColor);
@@ -172,7 +172,7 @@ void RenderScreen::drawPoly(std::vector<vertex> vertices){
         c.g /= totalWeights;
         c.b /= totalWeights;
         c.a /= totalWeights;
-        putPixel({j, i}, blend(c, colors[i*width + j], (float)c.a/255.f));
+        if(inBounds({j,i})) putPixel({j, i}, blend(c, colors[i*width + j], (float)c.a/255.f));
     };
     for(int i = 0; i < vertices.size() - 2; i+=3){
 
@@ -200,7 +200,7 @@ void RenderScreen::drawPoly(std::vector<vertex> vertices, const texture& t){
             int b = t.data[offset + 2];
             
             int a = t.channels >= 4 ? t.data[offset + 3] : 255;
-            putPixel({j, ini}, blend({r, g, b}, colors[ini*width + j], (float)a/255.f));
+            if(inBounds({j,ini})) putPixel({j, ini}, blend({r, g, b}, colors[ini*width + j], (float)a/255.f));
         };
 
         forEachInTri(vertices[i], vertices[i+1], vertices[i+2], drawWithTexture);
@@ -232,7 +232,7 @@ void RenderScreen::drawPolyIndexed(const std::vector<vertex>& vertices, const st
         c.g /= totalWeights;
         c.b /= totalWeights;
         c.a /= totalWeights;
-        putPixel({j, i}, blend(c, colors[i*width + j], (float)c.a/255.f));
+        if(inBounds({j,i})) putPixel({j, i}, blend(c, colors[i*width + j], (float)c.a/255.f));
     };
     for(int i = 0; i < indices.size() - 2; i+=3){
 
@@ -259,7 +259,7 @@ void RenderScreen::drawPolyIndexed(const std::vector<vertex>& vertices, const st
             int b = t.data[offset + 2];
 
             int a = t.channels >= 4 ? t.data[offset + 3] : 255;
-            putPixel({j, ini}, blend({r, g, b}, colors[ini*width + j], (float)a/255.f));
+            if(inBounds({j,ini})) putPixel({j, ini}, blend({r, g, b}, colors[ini*width + j], (float)a/255.f));
         };
 
         forEachInTri(vertices[indices[i]], vertices[indices[i+1]], vertices[indices[i+2]], drawWithTexture);
@@ -270,7 +270,7 @@ void RenderScreen::drawPolyIndexed(const std::vector<vertex>& vertices, const st
 void RenderScreen::drawPoly(std::vector<point> points){
     std::sort(points.begin(), points.end(), sortVertices);
     auto drawWithDrawColor = [&](int i, int j, float w1, float w2, float w3){
-        putPixel({j, i}, blend(drawColor, colors[i*width + j], (float)drawColor.a/255.f));
+        if(inBounds({j,i})) putPixel({j, i}, blend(drawColor, colors[i*width + j], (float)drawColor.a/255.f));
     };
     for(int i = 0; i < points.size() - 2; i++){
         forEachInTri(points[i], points[i+1], points[i+2], drawWithDrawColor);
@@ -279,7 +279,7 @@ void RenderScreen::drawPoly(std::vector<point> points){
 
 void RenderScreen::drawPolyIndexed(const std::vector<point>& points, const std::vector<int>& indices){
     auto drawWithDrawColor = [&](int i, int j, float w1, float w2, float w3){
-        putPixel({j, i}, blend(drawColor, colors[i*width + j], (float)drawColor.a/255.f));
+        if(inBounds({j,i})) putPixel({j, i}, blend(drawColor, colors[i*width + j], (float)drawColor.a/255.f));
     };
     for(int i = 0; i < points.size() - 2; i++){
         forEachInTri(points[i], points[i+1], points[i+2], drawWithDrawColor);
@@ -296,7 +296,7 @@ void RenderScreen::drawCircle(const point& pos, int radius, const color& c){
         for(int j = minx; j <= maxx; j++){
             int relx = j - minx - radius;
             int rely = i - miny - radius;
-            if(relx*relx + rely*rely <= radius*radius) putPixel({j, i}, blend(c, colors[i*width + j], (float)c.a/255.f));
+            if(relx*relx + rely*rely <= radius*radius && inBounds({j,i})) putPixel({j, i}, blend(c, colors[i*width + j], (float)c.a/255.f));
         }
     }
 }
