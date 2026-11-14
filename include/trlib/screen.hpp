@@ -19,10 +19,10 @@ public:
     void clear();
     void clear(const color& c);
     void putChar(const point& p, char32_t s);
-    void putColor(const point& p, const color& s);
 	void putPixel(const point& p, const color& c);
     void print();
     void doublePrint();
+    bool inBounds(const point& p);
 };
 
 }

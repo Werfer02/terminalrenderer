@@ -13,7 +13,11 @@ Screen::Screen() {
 Screen::Screen(int w, int h) : width(w), height(h) {
     characters = std::u32string(width*height, U' ');
     colors = std::vector<color>(width*height);
-}	
+}
+
+bool Screen::inBounds(const point& p){
+    return p.x < width && p.y < height;
+}
 void Screen::clear(){
     characters = std::u32string(width*height, U' ');
     colors = std::vector<color>(width*height);
@@ -23,9 +27,10 @@ void Screen::clear(const color& c){
     colors = std::vector<color>(width*height, c);
 }
 void Screen::putChar(const point& p, char32_t s){
-    characters[(p.y * width) + p.x] = s;
+    if(inBounds(p)) characters[(p.y * width) + p.x] = s;
 }
 void Screen::putPixel(const point& p, const color& c){
+    if(!inBounds(p)) return;
     characters[(p.y * width) + p.x] = U'█';
     colors[(p.y * width) + p.x] = c;
 }
