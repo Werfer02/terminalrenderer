@@ -289,13 +289,13 @@ void RenderScreen::drawPolyIndexed(const std::vector<point>& points, const std::
 void RenderScreen::drawCircle(const point& pos, int radius, const color& c){
     int minx = std::max(pos.x - radius, 0);
     int miny = std::max(pos.y - radius, 0);
-    int maxx = std::min(pos.x + radius, width);
-    int maxy = std::min(pos.y + radius, height);
+    int maxx = std::min(pos.x + radius, width - 1);
+    int maxy = std::min(pos.y + radius, height - 1);
 
-    for(int i = miny; i <= maxy; i++){
+    for(int i = miny; i <= maxy; i++){ // iterate only pixels within screen
         for(int j = minx; j <= maxx; j++){
-            int relx = j - minx - radius;
-            int rely = i - miny - radius;
+            int relx = j - pos.x; // but use original center for calculation
+            int rely = i - pos.y;
             if(relx*relx + rely*rely <= radius*radius && inBounds({j,i})) putPixel({j, i}, blend(c, colors[i*width + j], (float)c.a/255.f));
         }
     }
